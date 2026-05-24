@@ -1,0 +1,115 @@
+{
+  "title": "SlideSmith Vision Basic Example",
+  "canvas_width": 1920,
+  "canvas_height": 1080,
+  "slides": [
+    {
+      "background": "#f7f9fc",
+      "elements": [
+        {
+          "type": "shape",
+          "shape": "round_rect",
+          "x": 140,
+          "y": 120,
+          "w": 1640,
+          "h": 820,
+          "fill": "#ffffff",
+          "stroke": "#d7dee8",
+          "stroke_width": 2,
+          "radius": 30
+        },
+        {
+          "type": "text",
+          "x": 210,
+          "y": 185,
+          "w": 1100,
+          "h": 90,
+          "text": "Vision Spec to Editable PPTX",
+          "font_size": 58,
+          "font_face": "Arial",
+          "color": "#111827",
+          "bold": true
+        },
+        {
+          "type": "text",
+          "x": 214,
+          "y": 275,
+          "w": 980,
+          "h": 46,
+          "text": "Generated as HTML, converted by SlideSmith",
+          "font_size": 28,
+          "font_face": "Arial",
+          "color": "#4b5563"
+        },
+        {
+          "type": "shape",
+          "shape": "round_rect",
+          "x": 230,
+          "y": 430,
+          "w": 400,
+          "h": 190,
+          "fill": "#e8f2ff",
+          "stroke": "#8db7ff",
+          "stroke_width": 3,
+          "radius": 28
+        },
+        {
+          "type": "text",
+          "x": 270,
+          "y": 493,
+          "w": 320,
+          "h": 64,
+          "text": "Editable text",
+          "font_size": 34,
+          "font_face": "Arial",
+          "color": "#1f4f91",
+          "bold": true,
+          "align": "center"
+        },
+        {
+          "type": "shape",
+          "shape": "oval",
+          "x": 760,
+          "y": 430,
+          "w": 190,
+          "h": 190,
+          "fill": "#111827",
+          "stroke": "#111827"
+        },
+        {
+          "type": "text",
+          "x": 770,
+          "y": 495,
+          "w": 170,
+          "h": 60,
+          "text": "WPS",
+          "font_size": 38,
+          "font_face": "Arial",
+          "color": "#ffffff",
+          "bold": true,
+          "align": "center"
+        },
+        {
+          "type": "line",
+          "x": 1050,
+          "y": 525,
+          "x2": 1390,
+          "y2": 525,
+          "stroke": "#2e90fa",
+          "stroke_width": 8
+        },
+        {
+          "type": "text",
+          "x": 1120,
+          "y": 565,
+          "w": 360,
+          "h": 44,
+          "text": "Shape + line support",
+          "font_size": 28,
+          "font_face": "Arial",
+          "color": "#344054"
+        }
+      ]
+    }
+  ]
+}

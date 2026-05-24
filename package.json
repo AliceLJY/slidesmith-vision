@@ -1,0 +1,43 @@
+{
+  "name": "slidesmith-vision",
+  "version": "0.1.0",
+  "description": "Bridge visual slide reconstruction specs into SlideSmith HTML and editable PPTX.",
+  "type": "module",
+  "bin": {
+    "slidesmith-vision": "./bin/cli.mjs"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "examples/",
+    "README.md",
+    "README_CN.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node bin/cli.mjs examples/basic/spec.json -o /tmp/slidesmith-vision-basic.html"
+  },
+  "keywords": [
+    "pptx",
+    "slidesmith",
+    "presentation",
+    "image-to-pptx",
+    "editable",
+    "vision",
+    "html-to-pptx",
+    "local-first"
+  ],
+  "author": "AliceLJY",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AliceLJY/slidesmith-vision.git"
+  },
+  "homepage": "https://github.com/AliceLJY/slidesmith-vision#readme",
+  "bugs": {
+    "url": "https://github.com/AliceLJY/slidesmith-vision/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

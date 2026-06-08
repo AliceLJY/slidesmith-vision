@@ -25,6 +25,14 @@ SlideSmith Vision owns the upstream reconstruction layer:
 - generating SlideSmith-compatible HTML
 - example specs for screenshot-to-PPTX workflows
 
+## Usage
+
+```sh
+slidesmith-vision <spec.json> -o <output.html>
+```
+
+Converts a reconstruction spec into SlideSmith-compatible HTML (then editable PPTX via SlideSmith). See `examples/` for spec formats.
+
 ## Current Scope
 
 This repository currently provides a small `spec -> HTML` bridge. It does not try to solve full automatic OCR or layout inference yet.

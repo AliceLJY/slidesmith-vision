@@ -42,7 +42,7 @@ Supported spec elements:
 - editable text boxes
 - rectangles, rounded rectangles, ovals, and simple triangles
 - straight lines
-- raster image fallbacks
+- raster image fallbacks — local image paths (relative to the spec file) are inlined as base64 data URIs, so the generated HTML is self-contained and converts anywhere (see `examples/with-image/`)
 
 ## Quick Start
 

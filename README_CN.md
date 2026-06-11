@@ -33,7 +33,7 @@ SlideSmith Vision 负责上游：
 - 可编辑文本框
 - 矩形、圆角矩形、圆形、简单三角形
 - 直线
-- 复杂图表/图片裁图 fallback
+- 复杂图表/图片裁图 fallback——本地图片路径（相对 spec 文件解析）会内联成 base64 data URI，生成的 HTML 自包含、在任何地方都能转换（见 `examples/with-image/`）
 
 ## 快速测试
 

@@ -24,7 +24,7 @@
           "y": 185,
           "w": 1100,
           "h": 90,
-          "text": "Vision Spec to Editable PPTX",
+          "text": "Vision Spec to SlideSmith HTML",
           "font_size": 58,
           "font_face": "Arial",
           "color": "#111827",
@@ -36,7 +36,7 @@
           "y": 275,
           "w": 980,
           "h": 46,
-          "text": "Generated as HTML, converted by SlideSmith",
+          "text": "Self-contained HTML for downstream SlideSmith conversion",
           "font_size": 28,
           "font_face": "Arial",
           "color": "#4b5563"

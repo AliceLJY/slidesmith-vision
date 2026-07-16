@@ -9,42 +9,93 @@ const args = process.argv.slice(2);
 
 function usage() {
   console.log(`
-  SlideSmith Vision - Convert visual slide specs to SlideSmith HTML
+  SlideSmith Vision - Convert visual slide specs to SlideSmith-compatible HTML
 
   Usage:
-    slidesmith-vision <spec.json> -o <output.html>
+    slidesmith-vision <spec.json> -o <output.html> [--allow-missing-images]
 
   Options:
-    -o, --output    Output HTML path
-    -h, --help      Show help
+    -o, --output             Output HTML path
+    --allow-missing-images   Preserve unreadable local image src values with a warning
+                             (the output may no longer be self-contained)
+    -h, --help               Show help
 
   Example:
     slidesmith-vision examples/basic/spec.json -o /tmp/basic.html
+
+  This command emits HTML for downstream SlideSmith. It does not create PPTX files.
 `);
 }
 
-if (args.includes('-h') || args.includes('--help') || args.length === 0) {
-  usage();
-  process.exit(0);
+function parseArgs(argv) {
+  const parsed = {
+    input: null,
+    output: null,
+    allowMissingImages: false,
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+
+    if (arg === '--allow-missing-images') {
+      parsed.allowMissingImages = true;
+      continue;
+    }
+
+    if (arg === '-o' || arg === '--output') {
+      const output = argv[index + 1];
+      if (!output || output.startsWith('-')) {
+        throw new Error(`${arg} requires an output path`);
+      }
+      if (parsed.output !== null) {
+        throw new Error('Output path was provided more than once');
+      }
+      parsed.output = output;
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith('-')) {
+      throw new Error(`Unknown option ${JSON.stringify(arg)}`);
+    }
+
+    if (parsed.input !== null) {
+      throw new Error(`Unexpected argument ${JSON.stringify(arg)}`);
+    }
+    parsed.input = arg;
+  }
+
+  if (!parsed.input || !parsed.output) {
+    throw new Error('Both <spec.json> and -o <output.html> are required');
+  }
+
+  return parsed;
 }
 
-const outputIdx = args.findIndex((arg) => arg === '-o' || arg === '--output');
-const input = args.find((arg, idx) => !arg.startsWith('-') && idx !== outputIdx + 1);
-const output = outputIdx >= 0 ? args[outputIdx + 1] : null;
+async function main() {
+  if (args.includes('-h') || args.includes('--help') || args.length === 0) {
+    usage();
+    return;
+  }
 
-if (!input || !output) {
-  usage();
-  process.exit(1);
+  const { input, output, allowMissingImages } = parseArgs(args);
+  const inputPath = path.resolve(input);
+  const outputPath = path.resolve(output);
+  const spec = await readSpec(inputPath);
+  const html = specToHtml(spec, {
+    title: spec.title || path.basename(inputPath, path.extname(inputPath)),
+    baseDir: path.dirname(inputPath),
+    specPath: inputPath,
+    allowMissingImages,
+  });
+
+  await writeFile(outputPath, html, 'utf8');
+
+  console.log(`Wrote ${pathToFileURL(outputPath).href}`);
 }
 
-const inputPath = path.resolve(input);
-const outputPath = path.resolve(output);
-const spec = await readSpec(inputPath);
-const html = specToHtml(spec, {
-  title: spec.title || path.basename(inputPath, path.extname(inputPath)),
-  baseDir: path.dirname(inputPath),
+main().catch((error) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`slidesmith-vision: ${message}`);
+  process.exitCode = 1;
 });
-
-await writeFile(outputPath, html, 'utf8');
-
-console.log(`Wrote ${pathToFileURL(outputPath).href}`);

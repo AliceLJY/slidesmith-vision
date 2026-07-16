@@ -1,8 +1,8 @@
 # SlideSmith Vision
 
-**Bridge visual slide reconstruction into [SlideSmith](https://github.com/AliceLJY/slidesmith).**
+**Convert visual slide reconstruction specs into validated, [SlideSmith](https://github.com/AliceLJY/slidesmith)-compatible HTML.**
 
-SlideSmith turns HTML slides into editable `.pptx` files. SlideSmith Vision sits one step upstream: it converts a simple visual reconstruction spec into SlideSmith-compatible HTML, so screenshots, AI-generated slide mockups, or vision/OCR outputs can become editable PowerPoint/WPS decks through the existing SlideSmith engine.
+SlideSmith Vision does not create PPTX files. It sits one step upstream: this package converts a visual reconstruction spec into HTML, then downstream SlideSmith can convert that HTML into an editable `.pptx` for PowerPoint or WPS.
 
 ## How It Fits With SlideSmith
 
@@ -23,43 +23,50 @@ SlideSmith Vision owns the upstream reconstruction layer:
 - hybrid editability decisions
 - chart or figure raster fallbacks
 - generating SlideSmith-compatible HTML
-- example specs for screenshot-to-PPTX workflows
+- example specs for downstream SlideSmith workflows
 
 ## Usage
 
 ```sh
-slidesmith-vision <spec.json> -o <output.html>
+slidesmith-vision <spec.json> -o <output.html> [--allow-missing-images]
 ```
 
-Converts a reconstruction spec into SlideSmith-compatible HTML (then editable PPTX via SlideSmith). See `examples/` for spec formats.
+The command validates the reconstruction spec and emits SlideSmith-compatible HTML. Readable local images are inlined as data URIs, so successful default output does not depend on local image files. The command never creates PPTX itself; pass the HTML to SlideSmith as a separate downstream step.
+
+Missing or unreadable local images fail by default. The error identifies the spec file and the exact `slides[n].elements[n].path` or `.src` entry. To preserve the original image source instead, opt in explicitly:
+
+```sh
+slidesmith-vision spec.json -o output.html --allow-missing-images
+```
+
+The opt-in mode prints a warning and may preserve a local-file dependency. HTTP(S) image URLs are also preserved as external references, while existing data URIs are preserved as-is. Output is self-contained only when the spec has no external URLs and every local image is successfully inlined.
 
 ## Current Scope
 
-This repository currently provides a small `spec -> HTML` bridge. It does not try to solve full automatic OCR or layout inference yet.
+This repository currently provides a small `spec -> HTML` bridge for downstream SlideSmith, with validation and local-image inlining. It does not try to solve full automatic OCR, layout inference, or PPTX creation.
 
 Supported spec elements:
 
 - editable text boxes
 - rectangles, rounded rectangles, ovals, and simple triangles
 - straight lines
-- raster image fallbacks — local image paths (relative to the spec file) are inlined as base64 data URIs, so the generated HTML is self-contained and converts anywhere (see `examples/with-image/`)
+- raster image fallbacks — readable local image paths (relative to the spec file) are inlined as base64 data URIs (see `examples/with-image/`)
 
 ## Quick Start
 
-Generate SlideSmith HTML:
+Run the deterministic conversion and validation tests:
 
 ```bash
 npm test
-# writes /tmp/slidesmith-vision-basic.html
 ```
 
-Or run directly:
+Generate SlideSmith-compatible HTML:
 
 ```bash
 node bin/cli.mjs examples/basic/spec.json -o /tmp/basic.html
 ```
 
-Then convert with SlideSmith:
+Then, as a separate downstream step, convert with SlideSmith:
 
 ```bash
 node ../slidesmith/bin/cli.mjs /tmp/basic.html -o /tmp/basic.pptx --no-fonts
@@ -94,6 +101,18 @@ node ../slidesmith/bin/cli.mjs /tmp/basic.html -o /tmp/basic.pptx --no-fonts
 ```
 
 Coordinates are source-canvas pixels. The generated HTML uses the same pixel canvas, which lets the browser layout engine and SlideSmith preserve positions.
+
+The lightweight built-in validator requires:
+
+- a top-level object with positive numeric `canvas_width` and `canvas_height`
+- a non-empty top-level `slides` array
+- an `elements` array on every slide (it may be empty for an intentional blank slide)
+- a supported string `type` plus numeric `x` and `y` on every element
+- positive numeric `w` and `h` for text, shape, and image elements
+- numeric, non-identical `x`/`y` and `x2`/`y2` endpoints for lines
+- string `text` for text elements and a non-empty string `path` or `src` for images
+
+Invalid specs fail before the output file is written rather than producing an empty document or silent `0px` elements.
 
 ## Reconstruction Policy
 

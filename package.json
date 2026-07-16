@@ -1,7 +1,7 @@
 {
   "name": "slidesmith-vision",
-  "version": "0.1.0",
-  "description": "Bridge visual slide reconstruction specs into SlideSmith HTML and editable PPTX.",
+  "version": "0.1.1",
+  "description": "Convert validated visual slide reconstruction specs into SlideSmith-compatible HTML.",
   "type": "module",
   "bin": {
     "slidesmith-vision": "./bin/cli.mjs"
@@ -15,16 +15,16 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node bin/cli.mjs examples/basic/spec.json -o /tmp/slidesmith-vision-basic.html"
+    "test": "node --test test/*.test.mjs"
   },
   "keywords": [
     "pptx",
     "slidesmith",
     "presentation",
-    "image-to-pptx",
-    "editable",
+    "slide-spec",
+    "image-inlining",
     "vision",
-    "html-to-pptx",
+    "html",
     "local-first"
   ],
   "author": "AliceLJY",

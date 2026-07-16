@@ -1,8 +1,8 @@
 # SlideSmith Vision
 
-**把图片/截图/AI 生成的幻灯片草图，接到 [SlideSmith](https://github.com/AliceLJY/slidesmith) 的可编辑 PPTX 生成链路上。**
+**把视觉重建 spec 转成经过校验、兼容 [SlideSmith](https://github.com/AliceLJY/slidesmith) 的 HTML。**
 
-SlideSmith 负责 HTML 到可编辑 `.pptx`。SlideSmith Vision 放在上游：把视觉重建得到的结构化 spec 转成 SlideSmith 可吃的 HTML，再交给 SlideSmith 输出 WPS/PowerPoint/Keynote 可编辑的 PPTX。
+SlideSmith Vision 本身不创建 PPTX。它位于上游：把视觉重建得到的结构化 spec 转成 HTML；如需可编辑 `.pptx`，再把 HTML 交给下游的 SlideSmith 转换。
 
 ## 和 SlideSmith 的分工
 
@@ -22,32 +22,66 @@ SlideSmith Vision 负责上游：
 - 统一 OCR / vision / layout 输出格式
 - 判断哪些元素该可编辑、哪些该保留为裁图
 - 把重建结构转成 SlideSmith HTML
-- 保存 screenshot-to-PPTX 的测试样例
+- 保存供下游 SlideSmith 使用的视觉重建样例
+
+## 使用
+
+```sh
+slidesmith-vision <spec.json> -o <output.html> [--allow-missing-images]
+```
+
+CLI 会先校验 spec，再生成兼容 SlideSmith 的 HTML。可读取的本地图片会被内联为 data URI，因此默认成功生成的结果不再依赖本地图片文件。这个命令只输出 HTML，不会直接生成 PPTX。
+
+本地图片缺失或无法读取时，默认直接失败；错误会写明 spec 文件路径以及对应的 `slides[n].elements[n].path` 或 `.src`。如果确实要保留原始图片地址，可以显式使用：
+
+```sh
+slidesmith-vision spec.json -o output.html --allow-missing-images
+```
+
+此模式会打印明确警告，并可能保留本地文件依赖。HTTP(S) 图片地址会继续作为外部引用保留，已有 data URI 则原样保留。只有 spec 不含外部 URL、且所有本地图片都成功内联时，输出才是自包含 HTML。
 
 ## 当前范围
 
-现在先提供一个最小可用的 `spec -> HTML` 桥，不声称已经解决全自动 OCR 和布局推断。
+现在先提供一个带校验和本地图片内联的 `spec -> HTML` 桥，供下游 SlideSmith 使用；不声称已经解决全自动 OCR、布局推断或 PPTX 创建。
 
 支持元素：
 
 - 可编辑文本框
 - 矩形、圆角矩形、圆形、简单三角形
 - 直线
-- 复杂图表/图片裁图 fallback——本地图片路径（相对 spec 文件解析）会内联成 base64 data URI，生成的 HTML 自包含、在任何地方都能转换（见 `examples/with-image/`）
+- 复杂图表/图片裁图 fallback——可读取的本地图片路径（相对 spec 文件解析）会内联成 base64 data URI（见 `examples/with-image/`）
 
 ## 快速测试
 
 ```bash
 npm test
-# 输出 /tmp/slidesmith-vision-basic.html
 ```
 
-或者：
+`npm test` 会运行基础转换、图片内联、缺图失败、显式 fallback 和非法 spec 的确定性断言。要生成 HTML，可直接执行：
 
 ```bash
 node bin/cli.mjs examples/basic/spec.json -o /tmp/basic.html
+```
+
+如需 PPTX，再单独调用下游 SlideSmith：
+
+```bash
 node ../slidesmith/bin/cli.mjs /tmp/basic.html -o /tmp/basic.pptx --no-fonts
 ```
+
+## Spec 校验
+
+内置校验器不依赖第三方包，主要要求：
+
+- 顶层必须是对象，包含大于 0 的数字 `canvas_width`、`canvas_height`
+- 顶层 `slides` 必须是非空数组
+- 每页必须有 `elements` 数组；有意保留空白页时可用空数组
+- 每个元素必须有受支持的字符串 `type` 和数字 `x`、`y`
+- 文本、形状、图片必须有大于 0 的数字 `w`、`h`
+- 直线必须有数字端点 `x`/`y`、`x2`/`y2`，且两个端点不能重合
+- 文本元素必须有字符串 `text`；图片元素必须有非空字符串 `path` 或 `src`
+
+非法 spec 会在写输出文件前失败，不再静默生成空文档或 `0px` 元素。
 
 ## 设计原则
 

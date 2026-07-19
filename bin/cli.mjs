@@ -2,7 +2,7 @@
 
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { writeFile } from 'node:fs/promises';
+import { realpath, stat, writeFile } from 'node:fs/promises';
 import { specToHtml, readSpec } from '../lib/spec-to-html.mjs';
 
 const args = process.argv.slice(2);
@@ -81,7 +81,12 @@ async function main() {
   const { input, output, allowMissingImages } = parseArgs(args);
   const inputPath = path.resolve(input);
   const outputPath = path.resolve(output);
+  if (inputPath === outputPath) {
+    throw new Error('Input spec and output HTML must be different files');
+  }
+
   const spec = await readSpec(inputPath);
+  await assertDistinctFiles(inputPath, outputPath);
   const html = specToHtml(spec, {
     title: spec.title || path.basename(inputPath, path.extname(inputPath)),
     baseDir: path.dirname(inputPath),
@@ -89,9 +94,38 @@ async function main() {
     allowMissingImages,
   });
 
-  await writeFile(outputPath, html, 'utf8');
+  try {
+    await writeFile(outputPath, html, 'utf8');
+  } catch (error) {
+    throw new Error(`Cannot write output ${JSON.stringify(outputPath)}: ${error.message}`, { cause: error });
+  }
 
   console.log(`Wrote ${pathToFileURL(outputPath).href}`);
+}
+
+async function assertDistinctFiles(inputPath, outputPath) {
+  const inputRealPath = await realpath(inputPath);
+  let outputRealPath;
+  try {
+    outputRealPath = await realpath(outputPath);
+  } catch (error) {
+    if (error?.code !== 'ENOENT') {
+      throw new Error(`Cannot inspect output ${JSON.stringify(outputPath)}: ${error.message}`, { cause: error });
+    }
+    return;
+  }
+
+  const [inputStat, outputStat] = await Promise.all([stat(inputRealPath), stat(outputRealPath)]);
+  const sameInode = inputStat.ino !== 0
+    && outputStat.ino !== 0
+    && inputStat.dev === outputStat.dev
+    && inputStat.ino === outputStat.ino;
+  if (
+    inputRealPath === outputRealPath
+    || sameInode
+  ) {
+    throw new Error('Input spec and output HTML must be different files');
+  }
 }
 
 main().catch((error) => {

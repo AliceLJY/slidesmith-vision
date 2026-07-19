@@ -33,13 +33,15 @@ slidesmith-vision <spec.json> -o <output.html> [--allow-missing-images]
 
 The command validates the reconstruction spec and emits SlideSmith-compatible HTML. Readable local images are inlined as data URIs, so successful default output does not depend on local image files. The command never creates PPTX itself; pass the HTML to SlideSmith as a separate downstream step.
 
-Missing or unreadable local images fail by default. The error identifies the spec file and the exact `slides[n].elements[n].path` or `.src` entry. To preserve the original image source instead, opt in explicitly:
+Missing or unreadable local images fail by default. The error identifies the spec file and the exact `slides[n].elements[n].path` or `.src` entry. HTTP(S), protocol-relative (`//cdn.example/image.png`), and data URLs are preserved as external references. To preserve another original image source instead, opt in explicitly:
 
 ```sh
 slidesmith-vision spec.json -o output.html --allow-missing-images
 ```
 
 The opt-in mode prints a warning and may preserve a local-file dependency. HTTP(S) image URLs are also preserved as external references, while existing data URIs are preserved as-is. Output is self-contained only when the spec has no external URLs and every local image is successfully inlined.
+
+The input spec and output HTML must be different files. The CLI rejects direct, symlinked, and hard-linked aliases before writing so an accidental `spec.json -o spec.json` cannot destroy the source spec.
 
 ## Current Scope
 

@@ -32,13 +32,15 @@ slidesmith-vision <spec.json> -o <output.html> [--allow-missing-images]
 
 CLI 会先校验 spec，再生成兼容 SlideSmith 的 HTML。可读取的本地图片会被内联为 data URI，因此默认成功生成的结果不再依赖本地图片文件。这个命令只输出 HTML，不会直接生成 PPTX。
 
-本地图片缺失或无法读取时，默认直接失败；错误会写明 spec 文件路径以及对应的 `slides[n].elements[n].path` 或 `.src`。如果确实要保留原始图片地址，可以显式使用：
+本地图片缺失或无法读取时，默认直接失败；错误会写明 spec 文件路径以及对应的 `slides[n].elements[n].path` 或 `.src`。HTTP(S)、协议相对地址（`//cdn.example/image.png`）和 data URL 会按外部引用保留。如果确实要保留其他原始图片地址，可以显式使用：
 
 ```sh
 slidesmith-vision spec.json -o output.html --allow-missing-images
 ```
 
 此模式会打印明确警告，并可能保留本地文件依赖。HTTP(S) 图片地址会继续作为外部引用保留，已有 data URI 则原样保留。只有 spec 不含外部 URL、且所有本地图片都成功内联时，输出才是自包含 HTML。
+
+输入 spec 与输出 HTML 必须是不同文件。CLI 在写入前会拒绝同一路径、指向输入的符号链接以及硬链接，避免 `spec.json -o spec.json` 意外毁掉原始 spec。
 
 ## 当前范围
 

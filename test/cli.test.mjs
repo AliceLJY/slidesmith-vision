@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { access, link, mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -122,6 +122,82 @@ test('--allow-missing-images preserves src and emits a clear warning', async () 
 
   const html = await readFile(outputPath, 'utf8');
   assert.ok(html.includes('src="missing.png"'));
+});
+
+test('refuses to overwrite the input spec through direct, symlink, or hard-link aliases', async (t) => {
+  const specPath = await writeJson('preserve-source.json', {
+    canvas_width: 800,
+    canvas_height: 450,
+    slides: [{ elements: [] }],
+  });
+  const original = await readFile(specPath, 'utf8');
+  const aliases = [
+    ['direct path', specPath],
+    ['symlink', path.join(tempRoot, 'preserve-source-link.html')],
+    ['hard link', path.join(tempRoot, 'preserve-source-hardlink.html')],
+  ];
+  await symlink(specPath, aliases[1][1]);
+  await link(specPath, aliases[2][1]);
+
+  for (const [name, outputPath] of aliases) {
+    await t.test(name, () => {
+      const result = runCli([specPath, '-o', outputPath]);
+      assert.notEqual(result.status, 0);
+      assert.match(result.stderr, /Input spec and output HTML must be different files/);
+    });
+  }
+
+  assert.equal(await readFile(specPath, 'utf8'), original);
+});
+
+test('wraps output-directory failures with the target path', async () => {
+  const specPath = await writeJson('write-error.json', {
+    canvas_width: 800,
+    canvas_height: 450,
+    slides: [{ elements: [] }],
+  });
+  const outputPath = path.join(tempRoot, 'missing-directory', 'output.html');
+  const result = runCli([specPath, '-o', outputPath]);
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Cannot write output/);
+  assert.ok(result.stderr.includes(outputPath));
+  assert.equal(await pathExists(outputPath), false);
+});
+
+test('preserves protocol-relative image URLs as external references', () => {
+  const html = specToHtml(imageSpec('//cdn.example.com/slide.png'));
+  assert.ok(html.includes('src="//cdn.example.com/slide.png"'));
+});
+
+test('renders triangle strokes without clip-path clipping', () => {
+  const html = specToHtml({
+    canvas_width: 800,
+    canvas_height: 450,
+    slides: [{
+      elements: [{
+        type: 'shape',
+        shape: 'triangle',
+        x: 10,
+        y: 20,
+        w: 200,
+        h: 120,
+        fill: '#ffffff',
+        stroke: '#111111',
+        stroke_width: 6,
+      }],
+    }],
+  });
+
+  assert.match(html, /<svg[^>]+overflow: visible/);
+  assert.match(html, /<polygon[^>]+stroke="#[^\"]+"[^>]+stroke-width="6"/);
+  assert.doesNotMatch(html, /clip-path/);
+});
+
+test('package root exports the conversion API', async () => {
+  const imported = await import('slidesmith-vision');
+  assert.equal(typeof imported.readSpec, 'function');
+  assert.equal(typeof imported.specToHtml, 'function');
 });
 
 test('invalid specs fail consistently instead of producing empty or 0px output', async (t) => {

@@ -3,6 +3,10 @@
   "version": "0.1.1",
   "description": "Convert validated visual slide reconstruction specs into SlideSmith-compatible HTML.",
   "type": "module",
+  "main": "./lib/spec-to-html.mjs",
+  "exports": {
+    ".": "./lib/spec-to-html.mjs"
+  },
   "bin": {
     "slidesmith-vision": "./bin/cli.mjs"
   },

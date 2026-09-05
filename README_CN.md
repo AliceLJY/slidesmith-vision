@@ -26,6 +26,14 @@ SlideSmith Vision 负责上游：
 
 ## 使用
 
+不发布到 npm，先 clone 到本地并安装依赖：
+
+```sh
+git clone https://github.com/AliceLJY/slidesmith-vision.git && cd slidesmith-vision && npm install
+```
+
+在仓库里跑一次 `npm link` 可以拿到全局的 `slidesmith-vision` 命令（下面的示例默认你已经这么做了）；不然就把 `slidesmith-vision` 换成 `node bin/cli.mjs`。
+
 ```sh
 slidesmith-vision <spec.json> -o <output.html> [--allow-missing-images]
 ```
@@ -71,6 +79,36 @@ node bin/cli.mjs examples/basic/spec.json -o /tmp/basic.html
 node ../slidesmith/bin/cli.mjs /tmp/basic.html -o /tmp/basic.pptx --no-fonts
 ```
 
+## Spec 格式
+
+```json
+{
+  "canvas_width": 1920,
+  "canvas_height": 1080,
+  "slides": [
+    {
+      "background": "#ffffff",
+      "elements": [
+        {
+          "type": "text",
+          "x": 120,
+          "y": 90,
+          "w": 900,
+          "h": 80,
+          "text": "Editable title",
+          "font_size": 42,
+          "font_face": "Arial",
+          "color": "#111111",
+          "bold": true
+        }
+      ]
+    }
+  ]
+}
+```
+
+坐标是源画布像素。生成的 HTML 使用同一套像素画布，浏览器排版引擎和 SlideSmith 才能据此保留元素位置。
+
 ## Spec 校验
 
 内置校验器不依赖第三方包，主要要求：
@@ -95,3 +133,7 @@ node ../slidesmith/bin/cli.mjs /tmp/basic.html -o /tmp/basic.pptx --no-fonts
 - 保留源图路径，便于追溯和人工复核
 
 这样最符合 WPS 里的实际使用：关键文字能改，复杂视觉不失真。
+
+## 许可证
+
+[MIT](LICENSE)

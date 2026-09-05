@@ -27,6 +27,14 @@ SlideSmith Vision owns the upstream reconstruction layer:
 
 ## Usage
 
+Not published to npm — clone and install locally first:
+
+```sh
+git clone https://github.com/AliceLJY/slidesmith-vision.git && cd slidesmith-vision && npm install
+```
+
+Run `npm link` once inside the repo to get a global `slidesmith-vision` command (the example below assumes this); otherwise replace `slidesmith-vision` with `node bin/cli.mjs`.
+
 ```sh
 slidesmith-vision <spec.json> -o <output.html> [--allow-missing-images]
 ```

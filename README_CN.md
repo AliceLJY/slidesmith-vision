@@ -1,5 +1,7 @@
 # SlideSmith Vision
 
+> **2026-10-22 已归档。** 只实现了 spec → HTML 这一步（严格校验、本地图片内联），上游「图片 → spec」的识别重建从未做，所以没有端到端路径。只读保留作参考；哪天重新做「图片重建成 PPT」这条线再解档。
+
 **把视觉重建 spec 转成经过校验、兼容 [SlideSmith](https://github.com/AliceLJY/slidesmith) 的 HTML。**
 
 SlideSmith Vision 本身不创建 PPTX。它位于上游：把视觉重建得到的结构化 spec 转成 HTML；如需可编辑 `.pptx`，再把 HTML 交给下游的 SlideSmith 转换。

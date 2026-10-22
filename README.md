@@ -1,5 +1,7 @@
 # SlideSmith Vision
 
+> **Archived 2026-10-22.** Only the spec → HTML step was ever implemented (strict spec validation, local image inlining); the upstream image → spec reconstruction was never built, so there is no end-to-end path. Kept read-only as a reference. Will be unarchived if the image-to-PPT line is picked up again.
+
 **Convert visual slide reconstruction specs into validated, [SlideSmith](https://github.com/AliceLJY/slidesmith)-compatible HTML.**
 
 SlideSmith Vision does not create PPTX files. It sits one step upstream: this package converts a visual reconstruction spec into HTML, then downstream SlideSmith can convert that HTML into an editable `.pptx` for PowerPoint or WPS.
